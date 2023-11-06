@@ -43,41 +43,44 @@ sampleWeighted audioCtx weightedSampler =
 ----------------
 -- Generators --
 
-sine :: Double -> ShortSampler
-sine freq =
+newtype Wavelength = Wavelength Double
+  deriving Show
+
+sine :: Wavelength -> ShortSampler
+sine (Wavelength freq) =
   do
     ctx <- ask
     return . round $ fromIntegral (maxBound `div` 2 :: Int16) * sin (2 * pi * freq * ctx.time)
 
-sineW :: Double -> WeightedShortSampler
-sineW freq = weighted 1 $ sine freq
+sineW :: Wavelength -> WeightedShortSampler
+sineW = weighted 1 . sine
 
-square :: Double -> ShortSampler
-square freq =
+square :: Wavelength -> ShortSampler
+square (Wavelength freq) =
   do
     ctx <- ask
     return $ if sin (2 * pi * freq * ctx.time) > 0 then maxBound else minBound
 
-squareW :: Double -> WeightedShortSampler
-squareW freq = weighted 1 $ square freq
+squareW :: Wavelength -> WeightedShortSampler
+squareW = weighted 1 . square
 
-sawtooth :: Double -> ShortSampler
-sawtooth freq =
+sawtooth :: Wavelength -> ShortSampler
+sawtooth (Wavelength freq) =
   do
     ctx <- ask
     return . round $ fromIntegral (maxBound @Int16) * (ctx.time * freq - fromIntegral @Int16 (floor (ctx.time * freq)))
 
-sawtoothW :: Double -> WeightedShortSampler
-sawtoothW freq = weighted 1 $ sawtooth freq
+sawtoothW :: Wavelength -> WeightedShortSampler
+sawtoothW = weighted 1 . sawtooth
 
-triangle :: Double -> ShortSampler
-triangle freq =
+triangle :: Wavelength -> ShortSampler
+triangle (Wavelength freq) =
   do
     ctx <- ask
     return . round $ fromIntegral (maxBound @Int16) * (abs (ctx.time * freq - fromIntegral @Int16 (floor (ctx.time * freq))) * 2 - 1)
 
-triangleW :: Double -> WeightedShortSampler
-triangleW freq = weighted 1 $ triangle freq
+triangleW :: Wavelength -> WeightedShortSampler
+triangleW = weighted 1 . triangle
 
 -----------------
 -- Combinators --
@@ -95,20 +98,25 @@ weighted :: Double -> ShortSampler -> WeightedShortSampler
 weighted = WeightedShortSampler
 
 instance Semigroup WeightedShortSampler where
-  (WeightedShortSampler w1 s1) <> (WeightedShortSampler w2 s2) = WeightedShortSampler (w1 + w2) combinedSampler
-    where
+  (WeightedShortSampler w1 s1) <> (WeightedShortSampler w2 s2) =
+    let
       combinedSampler = do
         v1 <- s1
         v2 <- s2
         return . round $ fromIntegral v1 * w1 / (w1 + w2) + fromIntegral v2 * w2 / (w1 + w2)
+    in WeightedShortSampler (w1 + w2) combinedSampler
 
-withHarmonics :: (Double -> ShortSampler) -> Double -> WeightedShortSampler
-withHarmonics mkWave fundamental = mconcat $ map weightedHarmonic [1..5]
+withHarmonics :: (Wavelength -> ShortSampler) -> Wavelength -> WeightedShortSampler
+withHarmonics mkWave (Wavelength fundamental) = mconcat $ map weightedHarmonic [1..5]
   where
     weightedHarmonic :: Int -> WeightedShortSampler
     weightedHarmonic harmonic = 
       let harmonicD = fromIntegral harmonic
-       in weighted (1 / harmonicD) $ mkWave (fundamental * harmonicD)
+       in weighted (1 / harmonicD) . mkWave $ Wavelength (fundamental * harmonicD)
 
-chord :: (Double -> WeightedShortSampler) -> [Double] -> WeightedShortSampler
+chord :: (Wavelength -> WeightedShortSampler) -> [Wavelength] -> WeightedShortSampler
 chord mkWave fundamentals = mconcat $ mkWave <$> fundamentals
+
+-- TODO: Implement this. I feel like I need to add some mechanism for normalizing weights?
+-- weightedChord :: (Wavelength -> WeightedShortSampler) -> [(Wavelength, Double)] -> WeightedShortSampler
+-- weightedChord mkWave fundamentalWeights = 
