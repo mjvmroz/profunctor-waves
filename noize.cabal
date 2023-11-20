@@ -24,7 +24,13 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Diff
       Lib
+      Noize.Audio
+      Noize.Data.Physics
+      Noize.Data.Sample
+      Noize.Data.Scale.Diatonic
+      Noize.Sampler
   other-modules:
       Paths_noize
   autogen-modules:
@@ -38,17 +44,23 @@ library
       TypeApplications
       NoFieldSelectors
       NumericUnderscores
+      InstanceSigs
+      DuplicateRecordFields
+      MultiParamTypeClasses
+      FunctionalDependencies
+      ScopedTypeVariables
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , numbers
+    , sdl2
+    , transformers
+    , vector
   default-language: Haskell2010
 
 executable noize-exe
   main-is: Main.hs
   other-modules:
-      Audio
-      Sampler
-      WesternArt
       Paths_noize
   autogen-modules:
       Paths_noize
@@ -61,13 +73,15 @@ executable noize-exe
       TypeApplications
       NoFieldSelectors
       NumericUnderscores
+      InstanceSigs
+      DuplicateRecordFields
+      MultiParamTypeClasses
+      FunctionalDependencies
+      ScopedTypeVariables
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , noize
-    , sdl2
-    , transformers
-    , vector
   default-language: Haskell2010
 
 test-suite noize-test

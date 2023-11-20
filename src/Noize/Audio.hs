@@ -1,20 +1,24 @@
-module Audio (AudioContext (..), AudioData (..), play) where
+module Noize.Audio (AudioContext (..), AudioData (..), play) where
 
 import Control.Concurrent
 import Control.Monad
 import Data.IORef
 import Data.Int (Int16)
 import qualified Data.Vector.Storable.Mutable as V
+import Noize.Data.Sample (Sample (..))
 import SDL hiding (get)
 
 newtype AudioContext = AudioContext
-  { sampleRate :: Int
+  { sampleRate :: Integer
   }
 
 data AudioData = AudioData
   { context :: AudioContext
-  , samples :: [Int16]
+  , samples :: [Sample]
   }
+
+sampleTo16Bit :: Sample -> Int16
+sampleTo16Bit (Sample x) = round $ fromIntegral (maxBound `div` 2 :: Int16) * x
 
 audioCB :: IORef [Int16] -> AudioFormat sampleType -> V.IOVector sampleType -> IO ()
 audioCB samples format buffer =
@@ -36,7 +40,7 @@ play :: AudioData -> IO ()
 play (AudioData audioCtx samples) =
   do
     initializeAll
-    mutSamples <- newIORef samples
+    mutSamples <- newIORef . fmap sampleTo16Bit $ samples
     (device, _) <-
       openAudioDevice
         OpenDeviceSpec

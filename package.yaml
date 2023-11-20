@@ -35,6 +35,11 @@ ghc-options:
 
 library:
   source-dirs: src
+  dependencies:
+    - sdl2
+    - vector
+    - transformers
+    - numbers
   default-extensions:
     - GADTs
     - OverloadedRecordDot
@@ -42,6 +47,11 @@ library:
     - TypeApplications
     - NoFieldSelectors
     - NumericUnderscores
+    - InstanceSigs
+    - DuplicateRecordFields
+    - MultiParamTypeClasses
+    - FunctionalDependencies
+    - ScopedTypeVariables
 
 executables:
   noize-exe:
@@ -53,9 +63,6 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - noize
-      - sdl2
-      - vector
-      - transformers
     default-extensions:
       - GADTs
       - OverloadedRecordDot
@@ -63,6 +70,11 @@ executables:
       - TypeApplications
       - NoFieldSelectors
       - NumericUnderscores
+      - InstanceSigs
+      - DuplicateRecordFields
+      - MultiParamTypeClasses
+      - FunctionalDependencies
+      - ScopedTypeVariables
 
 tests:
   noize-test:
