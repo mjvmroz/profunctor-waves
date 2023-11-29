@@ -40,6 +40,8 @@ library:
     - vector
     - transformers
     - numbers
+    - containers
+    - groups
   default-extensions:
     - GADTs
     - OverloadedRecordDot

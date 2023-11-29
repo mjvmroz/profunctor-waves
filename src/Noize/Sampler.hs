@@ -43,44 +43,24 @@ sampleWeighted audioCtx weightedSampler =
 -- Generators --
 
 sine :: Wavelength -> Sampler
-sine (Wavelength freq) =
-  do
-    ctx <- ask
-    let weight = fromIntegral $ maxBound @Int16
-        radians = 2 * pi * fromRational (freq * ctx.time)
-    return . Sample . sin $ radians
+sine (Wavelength freq) = sample . (.time) <$> ask
+  where
+    rad time = 2 * pi * fromRational (freq * time)
+    sample = Sample . sin . rad
 
 sineW :: Wavelength -> WeightedSampler
 sineW = unitWeight . sine
 
--- square :: Wavelength -> Sampler
--- square (Wavelength freq) =
---   do
---     ctx <- ask
---     return $ if sin (2 * pi * (fromRational $ freq * ctx.time)) > 0
---       then maxBound
---       else minBound
+square :: Wavelength -> Sampler
+square (Wavelength freq) =
+  do
+    ctx <- ask
+    return $ if sin (2 * pi * fromRational (freq * ctx.time)) > 0
+      then Sample 1
+      else Sample $ -1
 
--- squareW :: Wavelength -> WeightedSampler
--- squareW = unitWeight . square
-
--- sawtooth :: Wavelength -> Sampler
--- sawtooth (Wavelength freq) =
---   do
---     ctx <- ask
---     return . Sample $ fromIntegral (maxBound @Int16) * (ctx.time * freq - fromIntegral @Int16 (floor (ctx.time * freq)))
-
--- sawtoothW :: Wavelength -> WeightedSampler
--- sawtoothW = unitWeight . sawtooth
-
--- triangle :: Wavelength -> Sampler
--- triangle (Wavelength freq) =
---   do
---     ctx <- ask
---     return . Sample . round $ fromIntegral (maxBound @Int16) * (abs (ctx.time * freq - fromIntegral @Int16 (floor (ctx.time * freq))) * 2 - 1)
-
--- triangleW :: Wavelength -> WeightedSampler
--- triangleW = unitWeight . triangle
+squareW :: Wavelength -> WeightedSampler
+squareW = unitWeight . square
 
 -----------------
 -- Combinators --
